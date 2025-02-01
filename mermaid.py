@@ -19,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate a high-resolution Mermaid diagram image.")
     parser.add_argument("--input", "-i", type=str, help="Path to a Mermaid code file. If not provided, you can enter manually.")
     parser.add_argument("--output", "-o", type=str, default="flowchart.png", help="Output image file name (default: flowchart.png)")
-    parser.add_argument("--scale", "-s", type=int, default=2, help="Scale factor for image resolution (default: 2)")
+    parser.add_argument("--scale", "-s", type=int, default=10, help="Scale factor for image resolution (default: 10)")
     parser.add_argument("--mmdc-path", "-m", type=str, default="mmdc", help="Path to the mmdc executable (default: mmdc, assuming it's in your PATH)")
     args = parser.parse_args()
 
