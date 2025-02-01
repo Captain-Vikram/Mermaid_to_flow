@@ -1,91 +1,68 @@
 import subprocess
 import os
+import argparse
 
-def mermaid_to_image(mermaid_code, output_filename="flowchart.png", scale=2):
-    # Get the directory where the script is located
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Define the file paths in the same folder as the script
-    diagram_path = os.path.join(script_dir, "diagram.mmd")
-    output_path = os.path.join(script_dir, output_filename)
-    
-    # Save the mermaid code to the diagram file
-    with open(diagram_path, "w") as file:
+def mermaid_to_image(mermaid_code, output_filename, scale, diagram_path, mmdc_path):
+    """Saves Mermaid code to a file and generates an image using mmdc."""
+    with open(diagram_path, "w", encoding="utf-8") as file:
         file.write(mermaid_code)
     
-    # Build the command string with the scale parameter for higher resolution
-    command = f'mmdc -i "{diagram_path}" -o "{output_path}" --scale {scale}'
+    command = f'"{mmdc_path}" -i "{diagram_path}" -o "{output_filename}" --scale {scale}'
     
     try:
-        # Use shell=True so that the command is resolved via the system PATH
         subprocess.run(command, shell=True, check=True)
-        print(f"Diagram saved as {output_path}")
+        print(f"✅ Diagram saved as {output_filename}")
     except subprocess.CalledProcessError as e:
-        print("Error generating the image:", e)
+        print("❌ Error generating the image:", e)
 
-# Example Mermaid Syntax
-mermaid_code = """
+def main():
+    parser = argparse.ArgumentParser(description="Generate a high-resolution Mermaid diagram image.")
+    parser.add_argument("--input", "-i", type=str, help="Path to a Mermaid code file. If not provided, you can enter manually.")
+    parser.add_argument("--output", "-o", type=str, default="flowchart.png", help="Output image file name (default: flowchart.png)")
+    parser.add_argument("--scale", "-s", type=int, default=2, help="Scale factor for image resolution (default: 2)")
+    parser.add_argument("--mmdc-path", "-m", type=str, default="mmdc", help="Path to the mmdc executable (default: mmdc, assuming it's in your PATH)")
+    args = parser.parse_args()
+
+    # Determine Mermaid Code Source (File or Manual Input)
+    if args.input:
+        try:
+            with open(args.input, "r", encoding="utf-8") as file:
+                mermaid_code = file.read()
+        except FileNotFoundError:
+            print(f"❌ Input file '{args.input}' not found. Please check the path.")
+            return
+    else:
+        print("\n🔹 No input file provided. Please enter your Mermaid code below:\n")
+        print("Example Mermaid code format:\n")
+        print("""
 graph TB
-    subgraph Client
-        A[User Browser/Extension]
-        B[Video Conference]
-    end
+    A[Start] --> B[End]
+        """)
+        
+        # Here we take multi-line input correctly
+        print("\nEnter your Mermaid diagram (multi-line):")
+        mermaid_code = ""
+        while True:
+            try:
+                # Use input() to take multiple lines of input
+                line = input()
+                if line == "END":
+                    break
+                mermaid_code += line + "\n"
+            except EOFError:
+                break
 
-    subgraph Frontend["Frontend (Next.js)"]
-        C[Authentication]
-        D[Dashboard]
-        E[Interview Interface]
-        F[WebSocket Client]
-    end
+    # Ask for other details interactively if they are not provided as arguments
+    output_filename = args.output if args.output else input("Enter output filename (default: flowchart.png): ") or "flowchart.png"
+    scale = args.scale if args.scale else int(input("Enter scale factor (default: 10): ") or 10)
+    mmdc_path = args.mmdc_path if args.mmdc_path else input("Enter mmdc path (default: mmdc): ") or "mmdc"
 
-    subgraph Backend["Backend (FastAPI)"]
-        G[API Gateway]
-        H[WebSocket Server]
-        I[AI Pipeline]
-        J[Google API Manager]
-    end
+    # Define the working directory and paths
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    diagram_path = os.path.join(script_dir, "diagram.mmd")
 
-    subgraph AI["AI Services"]
-        K[LLaMA 3.1]
-        L[Pypaz Emotion]
-        M[Whisper.cpp]
-    end
+    print("\n🔄 Generating Mermaid chart...")
+    mermaid_to_image(mermaid_code, output_filename, scale, diagram_path, mmdc_path)
 
-    subgraph External["External Services"]
-        N[Google Meet]
-        O[Google Drive]
-        P[Google OAuth]
-    end
-
-    subgraph Database
-        Q[(PostgreSQL/MongoDB)]
-    end
-
-    %% Client Connections
-    A -->|Auth| C
-    A -->|Video Feed| B
-    A -->|Stream to Backend| H
-    B -->|Live Preview| E
-
-    %% Frontend Flow
-    C -->|Verify| P
-    D -->|Fetch Data| G
-
-    %% Backend Processing
-    H -->|Process| I
-    I -->|Questions| K
-    I -->|Emotions| L
-    I -->|Transcription| M
-
-    %% External Integration
-    J -->|Create Meeting| N
-    J -->|Store Data| O
-    J -->|Auth| P
-
-    %% Data Storage
-    G -->|CRUD| Q
-    I -->|Store Analysis| Q
-"""
-
-print("Generating single mermaid chart")
-mermaid_to_image(mermaid_code, "flowchart.png", scale=10)
+if __name__ == "__main__":
+    main()
