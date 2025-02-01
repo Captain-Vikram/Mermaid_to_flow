@@ -1,0 +1,61 @@
+
+graph TB
+    subgraph Client
+        A[User Browser/Extension]
+        B[Video Conference]
+    end
+
+    subgraph Frontend["Frontend (Next.js)"]
+        C[Authentication]
+        D[Dashboard]
+        E[Interview Interface]
+        F[WebSocket Client]
+    end
+
+    subgraph Backend["Backend (FastAPI)"]
+        G[API Gateway]
+        H[WebSocket Server]
+        I[AI Pipeline]
+        J[Google API Manager]
+    end
+
+    subgraph AI["AI Services"]
+        K[LLaMA 3.1]
+        L[Pypaz Emotion]
+        M[Whisper.cpp]
+    end
+
+    subgraph External["External Services"]
+        N[Google Meet]
+        O[Google Drive]
+        P[Google OAuth]
+    end
+
+    subgraph Database
+        Q[(PostgreSQL/MongoDB)]
+    end
+
+    %% Client Connections
+    A -->|Auth| C
+    A -->|Video Feed| B
+    A -->|Stream to Backend| H
+    B -->|Live Preview| E
+
+    %% Frontend Flow
+    C -->|Verify| P
+    D -->|Fetch Data| G
+
+    %% Backend Processing
+    H -->|Process| I
+    I -->|Questions| K
+    I -->|Emotions| L
+    I -->|Transcription| M
+
+    %% External Integration
+    J -->|Create Meeting| N
+    J -->|Store Data| O
+    J -->|Auth| P
+
+    %% Data Storage
+    G -->|CRUD| Q
+    I -->|Store Analysis| Q
