@@ -37,14 +37,15 @@ graph TB
     %% Client Connections
     A -->|Auth| C
     A -->|Video Feed| B
-    A -->|Stream to Backend| H
-    B -->|Live Preview| E
+    B -->|Stream| E
 
     %% Frontend Flow
     C -->|Verify| P
+    E -->|Real-time Data| F
     D -->|Fetch Data| G
 
     %% Backend Processing
+    F -->|Stream| H
     H -->|Process| I
     I -->|Questions| K
     I -->|Emotions| L
